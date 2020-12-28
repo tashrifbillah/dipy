@@ -328,17 +328,22 @@ def gibbs_removal(vol, slice_axis=2, n_points=3, inplace=True, num_threads=1):
     if nd == 2:
         vol[:, :] = _gibbs_removal_2d(vol, n_points=n_points, G0=G0, G1=G1)
     else:
-        if num_threads is None:
-            pool = Pool()
-        else:
-            pool = Pool(num_threads)
+        if num_threads != 1:
+            if num_threads is None:
+                pool = Pool()
+            else:
+                pool = Pool(num_threads)
 
-        partial_func = partial(
-            _gibbs_removal_2d, n_points=n_points, G0=G0, G1=G1
-        )
-        vol[:, :, :] = pool.map(partial_func, vol)
-        pool.close()
-        pool.join()
+            partial_func = partial(
+                _gibbs_removal_2d, n_points=n_points, G0=G0, G1=G1
+            )
+            vol[:, :, :] = pool.map(partial_func, vol)
+            pool.close()
+            pool.join()
+        else:
+            for vi in range(shap[2]):
+                vol[:, :, vi] = _gibbs_removal_2d(vol[:, :, vi], n_points=n_points,
+                                                  G0=G0, G1=G1)
 
     # Reshape data to original format
     if nd == 3:
