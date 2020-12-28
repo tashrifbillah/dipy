@@ -5,7 +5,7 @@ Using the RESTORE algorithm for robust tensor fitting
 
 The diffusion tensor model takes into account certain kinds of noise (thermal),
 but not other kinds, such as "physiological" noise. For example, if a subject
-moves during the acquisition of one of the diffusion-weighted samples, this
+moves during acquisition of one of the diffusion-weighted samples, this
 might have a substantial effect on the parameters of the tensor fit calculated
 in all voxels in the brain for that subject. One of the pernicious consequences
 of this is that it can lead to wrong interpretation of group differences. For
@@ -58,6 +58,8 @@ visualizations:
 
 from dipy.viz import window, actor
 import matplotlib.pyplot as plt
+
+import dipy.denoise.noise_estimate as ne
 
 # Enables/disables interactive visualization
 interactive = False
@@ -115,13 +117,13 @@ sphere = dpd.default_sphere
 We visualize the ODFs in the ROI using ``dipy.viz`` module:
 """
 
-ren = window.Renderer()
-ren.add(actor.tensor_slicer(evals1, evecs1, scalar_colors=cfa1, sphere=sphere,
-                            scale=0.3))
+scene = window.Scene()
+scene.add(actor.tensor_slicer(evals1, evecs1, scalar_colors=cfa1,
+                              sphere=sphere, scale=0.3))
 print('Saving illustration as tensor_ellipsoids_wls.png')
-window.record(ren, out_path='tensor_ellipsoids_wls.png', size=(600, 600))
+window.record(scene, out_path='tensor_ellipsoids_wls.png', size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: tensor_ellipsoids_wls.png
@@ -130,7 +132,7 @@ if interactive:
    Tensor Ellipsoids.
 """
 
-window.clear(ren)
+scene.clear()
 
 """
 Next, we corrupt the data with some noise. To simulate a subject that moves
@@ -151,13 +153,14 @@ evals2 = fit_wls_noisy.evals
 evecs2 = fit_wls_noisy.evecs
 cfa2 = dti.color_fa(fa2, evecs2)
 
-ren = window.Renderer()
-ren.add(actor.tensor_slicer(evals2, evecs2, scalar_colors=cfa2, sphere=sphere,
-                            scale=0.3))
+scene = window.Scene()
+scene.add(actor.tensor_slicer(evals2, evecs2, scalar_colors=cfa2,
+                              sphere=sphere, scale=0.3))
 print('Saving illustration as tensor_ellipsoids_wls_noisy.png')
-window.record(ren, out_path='tensor_ellipsoids_wls_noisy.png', size=(600, 600))
+window.record(scene, out_path='tensor_ellipsoids_wls_noisy.png',
+              size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 In places where the tensor model is particularly sensitive to noise, the
@@ -173,8 +176,6 @@ estimate what would be a reasonable amount of noise to expect in the
 measurement. To do that, we use the ``dipy.denoise.noise_estimate`` module:
 
 """
-
-import dipy.denoise.noise_estimate as ne
 sigma = ne.estimate_sigma(data)
 
 """
@@ -190,14 +191,14 @@ evals3 = fit_restore_noisy.evals
 evecs3 = fit_restore_noisy.evecs
 cfa3 = dti.color_fa(fa3, evecs3)
 
-ren = window.Renderer()
-ren.add(actor.tensor_slicer(evals3, evecs3, scalar_colors=cfa3, sphere=sphere,
-                            scale=0.3))
+scene = window.Scene()
+scene.add(actor.tensor_slicer(evals3, evecs3, scalar_colors=cfa3,
+                              sphere=sphere, scale=0.3))
 print('Saving illustration as tensor_ellipsoids_restore_noisy.png')
-window.record(ren, out_path='tensor_ellipsoids_restore_noisy.png',
+window.record(scene, out_path='tensor_ellipsoids_restore_noisy.png',
               size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: tensor_ellipsoids_restore_noisy.png

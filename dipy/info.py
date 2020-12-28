@@ -7,7 +7,7 @@ docs.  In setup.py in particular, we exec this file, so it cannot import dipy
 # full release.  '.dev' as a _version_extra string means this is a development
 # version
 _version_major = 1
-_version_minor = 2
+_version_minor = 4
 _version_micro = 0
 _version_extra = 'dev'
 # _version_extra = ''
@@ -83,6 +83,7 @@ SCIPY_MIN_VERSION = '1.0'
 NIBABEL_MIN_VERSION = '3.0.0'
 H5PY_MIN_VERSION = '2.5.0'
 PACKAGING_MIN_VERSION = '19.0'
+TQDM_MIN_VERSION = '4.30.0'
 
 # Main setup parameters
 NAME                = 'dipy'
@@ -90,8 +91,8 @@ MAINTAINER          = "Eleftherios Garyfallidis"
 MAINTAINER_EMAIL    = "neuroimaging@python.org"
 DESCRIPTION         = description
 LONG_DESCRIPTION    = long_description
-URL                 = "http://dipy.org"
-DOWNLOAD_URL        = "http://github.com/dipy/dipy/archives/master"
+URL                 = "https://dipy.org"
+DOWNLOAD_URL        = "https://github.com/dipy/dipy/releases"
 LICENSE             = "BSD license"
 CLASSIFIERS         = CLASSIFIERS
 AUTHOR              = "dipy developers"
@@ -107,4 +108,44 @@ REQUIRES            = ["numpy (>=%s)" % NUMPY_MIN_VERSION,
                        "scipy (>=%s)" % SCIPY_MIN_VERSION,
                        "nibabel (>=%s)" % NIBABEL_MIN_VERSION,
                        "h5py (>=%s)" % H5PY_MIN_VERSION,
-                       "packaging (>=%s)" % PACKAGING_MIN_VERSION]
+                       "packaging (>=%s)" % PACKAGING_MIN_VERSION,
+                       "tqdm"]
+EXTRAS_REQUIRE = {
+    "test": [
+        "pytest",
+        "coverage",
+        "coveralls",
+        "codecov",
+    ],
+    "doc": [
+        "cython",
+        "numpy",
+        "scipy",
+        "nibabel>=3.0.0",
+        "h5py",
+        "h5py<3.0.0; sys_platform == 'win32'",
+        "cvxpy",
+        "pandas",
+        "tables",
+        "matplotlib",
+        "fury>=0.6"
+        "scikit-learn",
+        "scikit-image",
+        "statsmodels",
+    ],
+    "viz": [
+        "fury>=0.6",
+        "matplotlib"
+    ],
+    "ml": [
+        "scikit_learn",
+        "pandas",
+        "statsmodels"
+        "tables",
+        "tensorflow"
+    ]
+
+}
+
+EXTRAS_REQUIRE["all"] = list(set([a[i] for a in list(EXTRAS_REQUIRE.values())
+                                  for i in range(len(a))]))

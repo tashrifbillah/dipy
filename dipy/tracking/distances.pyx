@@ -12,6 +12,7 @@ from libc.string cimport memcpy
 
 import time
 import numpy as np
+from warnings import warn
 cimport numpy as cnp
 
 
@@ -256,6 +257,7 @@ def cut_plane(tracks, ref):
         float hit[3]
         float hitMp[3]
         float *delta
+    normal[:] = [0, 0, 0]
     # List used for storage of hits.  We will fill this with lots of
     # small numpy arrays, and reuse them over the reference track point
     # loops.
@@ -481,6 +483,10 @@ def bundles_distances_mam(tracksA, tracksB, metric='avg'):
     DM : array, shape (len(tracksA), len(tracksB))
         distances between tracksA and tracksB according to metric
 
+    See Also
+    ---------
+    dipy.tracking.streamline.set_number_of_points
+
     """
     cdef:
         size_t i, j, lentA, lentB
@@ -502,6 +508,12 @@ def bundles_distances_mam(tracksA, tracksB, metric='avg'):
         cnp.ndarray[cnp.double_t, ndim=2] DM
     lentA = len(tracksA)
     lentB = len(tracksB)
+    if lentA != lentB:
+        w_s = "Streamlines do not have the same number of points. "
+        w_s += "All streamlines need to have the same number of points. "
+        w_s += "Use dipy.tracking.streamline.set_number_of_points to adjust "
+        w_s += "your streamlines"
+        warn(w_s)
     tracksA32 = np.zeros((lentA,), dtype=object)
     tracksB32 = np.zeros((lentB,), dtype=object)
     DM = np.zeros((lentA,lentB), dtype=np.double)
@@ -564,7 +576,7 @@ def bundles_distances_mdf(tracksA, tracksB):
 
     See Also
     ---------
-    dipy.metrics.downsample
+    dipy.tracking.streamline.set_number_of_points
 
     """
     cdef:
@@ -578,6 +590,12 @@ def bundles_distances_mdf(tracksA, tracksB):
         cnp.ndarray[cnp.double_t, ndim=2] DM
     lentA = len(tracksA)
     lentB = len(tracksB)
+    if lentA != lentB:
+        w_s = "Streamlines do not have the same number of points. "
+        w_s += "All streamlines need to have the same number of points. "
+        w_s += "Use dipy.tracking.streamline.set_number_of_points to adjust "
+        w_s += "your streamlines"
+        warn(w_s)
     tracksA32 = np.zeros((lentA,), dtype=object)
     tracksB32 = np.zeros((lentB,), dtype=object)
     DM = np.zeros((lentA,lentB), dtype=np.double)
@@ -638,7 +656,7 @@ cdef inline cnp.float32_t czhang(size_t t1_len,
                   min_t1t2)
     cdef:
         size_t t1_pi, t2_pi
-        cnp.float32_t mean_t2t1 = 0, mean_t1t2 = 0, dist_val
+        cnp.float32_t mean_t2t1 = 0, mean_t1t2 = 0, dist_val = 0
     for t1_pi from 0<= t1_pi < t1_len:
         mean_t1t2+=min_t1t2[t1_pi]
     mean_t1t2=mean_t1t2/t1_len
@@ -671,7 +689,7 @@ cdef inline void min_distances(size_t t1_len,
         cnp.float32_t *t2_pt
         cnp.float32_t d0, d1, d2
         cnp.float32_t delta2
-        int t1_pi, t2_pi
+        size_t t1_pi, t2_pi
     for t2_pi from 0<= t2_pi < t2_len:
         min_t2t1[t2_pi] = inf
     for t1_pi from 0<= t1_pi < t1_len:
@@ -1075,7 +1093,7 @@ def approx_polygon_track(xyz,alpha=0.392):
     next point.
     """
     cdef :
-        int mid_index
+        size_t mid_index
         cnp.ndarray[cnp.float32_t, ndim=2] track
         float *fvec0
         float *fvec1
@@ -1560,12 +1578,12 @@ def local_skeleton_clustering(tracks, d_thr=10):
     above using the dipy.viz module::
 
         from dipy.viz import window, actor
-        r=window.Renderer()
+        scene = window.Scene()
         for c in C:
             color=np.random.rand(3)
             for i in C[c]['indices']:
-                r.add(actor.line(tracks[i],color))
-        window.show(r)
+                scene.add(actor.line(tracks[i],color))
+        window.show(scene)
 
     See Also
     --------
@@ -1864,17 +1882,18 @@ def larch_3split(tracks, indices=None, thr=10.):
     Here is an example of how to visualize the clustering above::
 
         from dipy.viz import window, actor
-        r=window.Renderer()
-        r.add(actor.line(tracks,fvtk.red))
-        window.show(r)
+        scene = window.Scene()
+        scene.add(actor.line(tracks,window.colors.red))
+        window.show(scene)
         for c in C:
             color=np.random.rand(3)
             for i in C[c]['indices']:
-                r.add(actor.line(tracks[i],color))
-        window.show(r)
+                scene.add(actor.line(tracks[i],color))
+        window.show(scene)
         for c in C:
-            r.add(actor.line(C[c]['rep3']/C[c]['N'],fos.white))
-        window.show(r)
+            scene.add(actor.line(C[c]['rep3']/C[c]['N'],
+                                 window.colors.white))
+        window.show(scene)
     """
 
     cdef:

@@ -35,7 +35,7 @@ from dipy.io.image import load_nifti, load_nifti_data
 from dipy.io.streamline import save_trk
 from dipy.io.stateful_tractogram import Space, StatefulTractogram
 from dipy.reconst.csdeconv import (ConstrainedSphericalDeconvModel,
-                                   auto_response)
+                                   auto_response_ssst)
 from dipy.reconst.dti import fractional_anisotropy, TensorModel
 from dipy.tracking import utils
 from dipy.tracking.local_tracking import LocalTracking
@@ -64,7 +64,7 @@ seed_mask = (labels == 2)
 seed_mask[white_matter < 0.5] = 0
 seeds = utils.seeds_from_mask(seed_mask, affine, density=2)
 
-response, ratio = auto_response(gtab, data, roi_radius=10, fa_thr=0.7)
+response, ratio = auto_response_ssst(gtab, data, roi_radii=10, fa_thr=0.7)
 csd_model = ConstrainedSphericalDeconvModel(gtab, response)
 csd_fit = csd_model.fit(data, mask=white_matter)
 
@@ -134,12 +134,12 @@ sft = StatefulTractogram(streamlines, hardi_img, Space.RASMM)
 save_trk(sft, "tractogram_probabilistic_thresh_all.trk")
 
 if has_fury:
-    r = window.Renderer()
-    r.add(actor.line(streamlines, colormap.line_colors(streamlines)))
-    window.record(r, out_path='tractogram_deterministic_thresh_all.png',
+    scene = window.Scene()
+    scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
+    window.record(scene, out_path='tractogram_deterministic_thresh_all.png',
                   size=(800, 800))
     if interactive:
-        window.show(r)
+        window.show(scene)
 
 """
 .. figure:: tractogram_deterministic_thresh_all.png
@@ -203,12 +203,12 @@ sft = StatefulTractogram(streamlines, hardi_img, Space.RASMM)
 save_trk(sft, "tractogram_deterministic_binary_all.trk")
 
 if has_fury:
-    r = window.Renderer()
-    r.add(actor.line(streamlines, colormap.line_colors(streamlines)))
-    window.record(r, out_path='tractogram_deterministic_binary_all.png',
+    scene = window.Scene()
+    scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
+    window.record(scene, out_path='tractogram_deterministic_binary_all.png',
                   size=(800, 800))
     if interactive:
-        window.show(r)
+        window.show(scene)
 
 """
 .. figure:: tractogram_deterministic_binary_all.png
@@ -299,12 +299,12 @@ sft = StatefulTractogram(streamlines, hardi_img, Space.RASMM)
 save_trk(sft, "tractogram_deterministic_act_all.trk")
 
 if has_fury:
-    r = window.Renderer()
-    r.add(actor.line(streamlines, colormap.line_colors(streamlines)))
-    window.record(r, out_path='tractogram_deterministic_act_all.png',
+    scene = window.Scene()
+    scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
+    window.record(scene, out_path='tractogram_deterministic_act_all.png',
                   size=(800, 800))
     if interactive:
-        window.show(r)
+        window.show(scene)
 
 """
 .. figure:: tractogram_deterministic_act_all.png
@@ -325,12 +325,12 @@ sft = StatefulTractogram(streamlines, hardi_img, Space.RASMM)
 save_trk(sft, "tractogram_deterministic_act_valid.trk")
 
 if has_fury:
-    r = window.Renderer()
-    r.add(actor.line(streamlines, colormap.line_colors(streamlines)))
-    window.record(r, out_path='tractogram_deterministic_act_valid.png',
+    scene = window.Scene()
+    scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
+    window.record(scene, out_path='tractogram_deterministic_act_valid.png',
                   size=(800, 800))
     if interactive:
-        window.show(r)
+        window.show(scene)
 
 """
 .. figure:: tractogram_deterministic_act_valid.png

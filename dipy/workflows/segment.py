@@ -2,11 +2,13 @@
 import logging
 from dipy.workflows.workflow import Workflow
 from dipy.io.image import save_nifti, load_nifti
-import nibabel as nib
 import numpy as np
 from time import time
+from dipy.tracking import Streamlines
 from dipy.segment.mask import median_otsu
 from dipy.segment.bundles import RecoBundles
+from dipy.io.stateful_tractogram import Space, StatefulTractogram
+from dipy.io.streamline import load_tractogram, save_tractogram
 
 
 class MedianOtsuFlow(Workflow):
@@ -29,30 +31,29 @@ class MedianOtsuFlow(Workflow):
             Path to the input volumes. This path may contain wildcards to
             process multiple inputs at once.
         save_masked : bool, optional
-            Save mask
+            Save mask.
         median_radius : int, optional
-            Radius (in voxels) of the applied median filter (default 2)
+            Radius (in voxels) of the applied median filter.
         numpass : int, optional
-            Number of pass of the median filter (default 5)
+            Number of pass of the median filter.
         autocrop : bool, optional
             If True, the masked input_volumes will also be cropped using the
             bounding box defined by the masked data. For example, if diffusion
             images are of 1x1x1 (mm^3) or higher resolution auto-cropping could
             reduce their size in memory and speed up some of the analysis.
-            (default False)
         vol_idx : variable int, optional
             1D array representing indices of ``axis=-1`` of a 4D
             `input_volume`. From the command line use something like
             `3 4 5 6`. From script use something like `[3, 4, 5, 6]`. This
             input is required for 4D volumes.
         dilate : int, optional
-            number of iterations for binary dilation (default 'None')
+            number of iterations for binary dilation.
         out_dir : string, optional
-            Output directory (default input file directory)
+            Output directory. (default current directory)
         out_mask : string, optional
-            Name of the mask volume to be saved (default 'brain_mask.nii.gz')
+            Name of the mask volume to be saved.
         out_masked : string, optional
-            Name of the masked volume to be saved (default 'dwi_masked.nii.gz')
+            Name of the masked volume to be saved.
         """
         io_it = self.get_io_iterator()
         if vol_idx is not None:
@@ -111,62 +112,64 @@ class RecoBundlesFlow(Workflow):
         Parameters
         ----------
         streamline_files : string
-            The path of streamline files where you want to recognize bundles
+            The path of streamline files where you want to recognize bundles.
         model_bundle_files : string
-            The path of model bundle files
+            The path of model bundle files.
         greater_than : int, optional
             Keep streamlines that have length greater than
-            this value (default 50) in mm.
+            this value in mm.
         less_than : int, optional
             Keep streamlines have length less than this value
-            (default 1000000) in mm.
+            in mm.
         no_slr : bool, optional
             Don't enable local Streamline-based Linear
-            Registration (default False).
+            Registration.
         clust_thr : float, optional
-            MDF distance threshold for all streamlines (default 15)
+            MDF distance threshold for all streamlines.
         reduction_thr : float, optional
-            Reduce search space by (mm) (default 15)
+            Reduce search space by (mm).
         reduction_distance : string, optional
-            Reduction distance type can be mdf or mam (default mdf)
+            Reduction distance type can be mdf or mam.
         model_clust_thr : float, optional
-            MDF distance threshold for the model bundles (default 2.5)
+            MDF distance threshold for the model bundles.
         pruning_thr : float, optional
-            Pruning after matching (default 8).
+            Pruning after matching.
         pruning_distance : string, optional
-            Pruning distance type can be mdf or mam (default mdf)
+            Pruning distance type can be mdf or mam.
         slr_metric : string, optional
-            Options are None, symmetric, asymmetric or diagonal
-            (default symmetric).
+            Options are None, symmetric, asymmetric or diagonal.
         slr_transform : string, optional
-            Transformation allowed. translation, rigid, similarity or scaling
-            (Default 'similarity').
+            Transformation allowed. translation, rigid, similarity or scaling.
         slr_matrix : string, optional
-            Options are 'nano', 'tiny', 'small', 'medium', 'large', 'huge'
-            (default 'small')
+            Options are 'nano', 'tiny', 'small', 'medium', 'large', 'huge'.
         refine : bool, optional
-            Enable refine recognized bunle (default False)
+            Enable refine recognized bundle.
         r_reduction_thr : float, optional
-            Refine reduce search space by (mm) (default 12)
+            Refine reduce search space by (mm).
         r_pruning_thr : float, optional
-            Refine pruning after matching (default 6).
+            Refine pruning after matching.
         no_r_slr : bool, optional
             Don't enable Refine local Streamline-based Linear
-            Registration (default False).
+            Registration.
         out_dir : string, optional
-            Output directory (default input file directory)
+            Output directory. (default current directory)
         out_recognized_transf : string, optional
-            Recognized bundle in the space of the model bundle
-            (default 'recognized.trk')
+            Recognized bundle in the space of the model bundle.
         out_recognized_labels : string, optional
-            Indices of recognized bundle in the original tractogram
-            (default 'labels.npy')
+            Indices of recognized bundle in the original tractogram.
 
         References
         ----------
         .. [Garyfallidis17] Garyfallidis et al. Recognition of white matter
          bundles using local and global streamline-based registration and
          clustering, Neuroimage, 2017.
+
+        .. [Chandio2020] Chandio, B.Q., Risacher, S.L., Pestilli, F.,
+        Bullock, D., Yeh, FC., Koudoro, S., Rokem, A., Harezlak, J., and
+        Garyfallidis, E. Bundle analytics, a computational framework for
+        investigating the shapes and profiles of brain pathways across
+        populations. Sci Rep 10, 17149 (2020)
+
         """
         slr = not no_slr
         r_slr = not no_r_slr
@@ -205,7 +208,8 @@ class RecoBundlesFlow(Workflow):
 
         t = time()
         logging.info(streamline_files)
-        input_obj = nib.streamlines.load(streamline_files)
+        input_obj = load_tractogram(streamline_files, 'same',
+                                    bbox_valid_check=False)
         streamlines = input_obj.streamlines
 
         logging.info(' Loading time %0.3f sec' % (time() - t,))
@@ -216,7 +220,8 @@ class RecoBundlesFlow(Workflow):
         for _, mb, out_rec, out_labels in io_it:
             t = time()
             logging.info(mb)
-            model_bundle = nib.streamlines.load(mb).streamlines
+            model_bundle = load_tractogram(mb, 'same',
+                                           bbox_valid_check=False).streamlines
             logging.info(' Loading time %0.3f sec' % (time() - t,))
             logging.info("model file = ")
             logging.info(mb)
@@ -271,10 +276,9 @@ class RecoBundlesFlow(Workflow):
                 logging.info("Bundle adjacency Metric {0}".format(ba))
                 logging.info("Bundle Min Distance Metric {0}".format(bmd))
 
-            new_tractogram = nib.streamlines.Tractogram(recognized_bundle,
-                                                        affine_to_rasmm=np.eye(4))
-            nib.streamlines.save(new_tractogram, out_rec,
-                                 header=input_obj.header)
+            new_tractogram = StatefulTractogram(recognized_bundle,
+                                                streamline_files, Space.RASMM)
+            save_tractogram(new_tractogram, out_rec, bbox_valid_check=False)
             logging.info('Saving output files ...')
             np.save(out_labels, np.array(labels))
             logging.info(out_rec)
@@ -294,14 +298,13 @@ class LabelsBundlesFlow(Workflow):
         Parameters
         ----------
         streamline_files : string
-            The path of streamline files where you want to recognize bundles
+            The path of streamline files where you want to recognize bundles.
         labels_files : string
-            The path of model bundle files
+            The path of model bundle files.
         out_dir : string, optional
-            Output directory (default input file directory)
+            Output directory. (default current directory)
         out_bundle : string, optional
-            Recognized bundle in the space of the model bundle
-            (default 'recognized_orig.trk')
+            Recognized bundle in the space of the model bundle.
 
         References
         ----------
@@ -313,17 +316,21 @@ class LabelsBundlesFlow(Workflow):
         logging.info('### Labels to Bundles ###')
 
         io_it = self.get_io_iterator()
-        for sf, lb, out_bundle in io_it:
+        for f_steamlines, f_labels, out_bundle in io_it:
 
-            logging.info(sf)
-            tractogram_obj = nib.streamlines.load(sf)
-            streamlines = tractogram_obj.streamlines
+            logging.info(f_steamlines)
+            sft = load_tractogram(f_steamlines, 'same',
+                                  bbox_valid_check=False)
+            streamlines = sft.streamlines
 
-            logging.info(lb)
-            location = np.load(lb)
+            logging.info(f_labels)
+            location = np.load(f_labels)
+            if len(location) < 1 :
+                bundle = Streamlines([])
+            else:
+                bundle = streamlines[location]
+
             logging.info('Saving output files ...')
-            new_tractogram = nib.streamlines.Tractogram(streamlines[location],
-                                                        affine_to_rasmm=np.eye(4))
-            nib.streamlines.save(new_tractogram, out_bundle,
-                                 header=tractogram_obj.header)
+            new_sft = StatefulTractogram(bundle, sft, Space.RASMM)
+            save_tractogram(new_sft, out_bundle, bbox_valid_check=False)
             logging.info(out_bundle)

@@ -53,9 +53,9 @@ if using_setuptools:
     extra_setuptools_args = dict(
         tests_require=['pytest'],
         zip_safe=False,
-        extras_require=dict(
-            doc=['Sphinx>=1.0'],
-            test=['pytest']))
+        extras_require=info.EXTRAS_REQUIRE,
+        python_requires=">= 3.6",
+        )
 
 # Define extensions
 EXTS = []
@@ -69,7 +69,7 @@ for modulename, other_sources, language in (
         ('dipy.direction.probabilistic_direction_getter', [], 'c'),
         ('dipy.direction.closest_peak_direction_getter', [], 'c'),
         ('dipy.direction.bootstrap_direction_getter', [], 'c'),
-        ('dipy.reconst.peak_direction_getter', [], 'c'),
+        ('dipy.reconst.eudx_direction_getter', [], 'c'),
         ('dipy.reconst.recspeed', [], 'c'),
         ('dipy.reconst.vec_val_sum', [], 'c'),
         ('dipy.reconst.quick_squash', [], 'c'),
@@ -157,6 +157,9 @@ SetupDependency('nibabel', info.NIBABEL_MIN_VERSION,
 SetupDependency('h5py', info.H5PY_MIN_VERSION,
                 req_type='install_requires',
                 heavy=False).check_fill(extra_setuptools_args)
+SetupDependency('tqdm', info.TQDM_MIN_VERSION,
+                req_type='install_requires',
+                heavy=False).check_fill(extra_setuptools_args)
 
 cmdclass = dict(
     build_py=pybuilder,
@@ -221,7 +224,6 @@ def main(**extra_args):
                     'dipy.nn.tests'],
 
           ext_modules=EXTS,
-          python_requires=">= 3.5",
           # The package_data spec has no effect for me (on python 2.6) -- even
           # changing to data_files doesn't get this stuff included in the
           # source distribution -- not sure if it has something to do with the

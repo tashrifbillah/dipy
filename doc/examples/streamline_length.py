@@ -8,7 +8,7 @@ also how to compress the streamlines without considerably reducing their
 lengths or overall shape.
 
 A streamline in DIPY_ is represented as a numpy array of size
-:math:`(N \times 3)` where each row of the array represent a 3D point of the
+:math:`(N \times 3)` where each row of the array represents a 3D point of the
 streamline. A set of streamlines is represented with a list of
 numpy arrays of size :math:`(N_i \times 3)` for :math:`i=1:M` where $M$ is the
 number of streamlines in the set.
@@ -18,7 +18,8 @@ import numpy as np
 from dipy.tracking.distances import approx_polygon_track
 from dipy.tracking.streamline import set_number_of_points
 from dipy.tracking.utils import length
-
+import matplotlib.pyplot as plt
+from dipy.viz import window, actor
 
 """
 Let's first create a simple simulation of a bundle of streamlines using
@@ -55,8 +56,6 @@ Below we show the histogram of the lengths of the streamlines.
 """
 
 lengths = list(length(bundle))
-
-import matplotlib.pyplot as plt
 
 fig_hist, ax = plt.subplots(1)
 ax.hist(lengths, color='burlywood')
@@ -108,20 +107,18 @@ bundle_downsampled2 = [approx_polygon_track(s, 0.25) for s in bundle]
 n_pts_ds2 = [len(streamline) for streamline in bundle_downsampled2]
 
 """
-Both, ``set_number_of_points`` and ``approx_polygon_track`` can be thought as 
+Both, ``set_number_of_points`` and ``approx_polygon_track`` can be thought as
 methods for lossy compression of streamlines.
 """
-
-from dipy.viz import window, actor
 
 # Enables/disables interactive visualization
 interactive = False
 
-ren = window.Renderer()
-ren.SetBackground(*window.colors.white)
+scene = window.Scene()
+scene.SetBackground(*window.colors.white)
 bundle_actor = actor.streamtube(bundle, window.colors.red, linewidth=0.3)
 
-ren.add(bundle_actor)
+scene.add(bundle_actor)
 
 bundle_actor2 = actor.streamtube(bundle_downsampled, window.colors.red, linewidth=0.3)
 bundle_actor2.SetPosition(0, 40, 0)
@@ -129,13 +126,13 @@ bundle_actor2.SetPosition(0, 40, 0)
 bundle_actor3 = actor.streamtube(bundle_downsampled2, window.colors.red, linewidth=0.3)
 bundle_actor3.SetPosition(0, 80, 0)
 
-ren.add(bundle_actor2)
-ren.add(bundle_actor3)
+scene.add(bundle_actor2)
+scene.add(bundle_actor3)
 
-ren.set_camera(position=(0, 0, 0), focal_point=(30, 0, 0))
-window.record(ren, out_path='simulated_cosine_bundle.png', size=(900, 900))
+scene.set_camera(position=(0, 0, 0), focal_point=(30, 0, 0))
+window.record(scene, out_path='simulated_cosine_bundle.png', size=(900, 900))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: simulated_cosine_bundle.png
@@ -150,14 +147,13 @@ becomes obvious that we have managed to reduce in a great amount the size of the
 initial dataset.
 """
 
-import matplotlib.pyplot as plt
-
 fig_hist, ax = plt.subplots(1)
 ax.hist(n_pts, color='r', histtype='step', label='initial')
 ax.hist(n_pts_ds, color='g', histtype='step', label='set_number_of_points (12)')
 ax.hist(n_pts_ds2, color='b', histtype='step', label='approx_polygon_track (0.25)')
 ax.set_xlabel('Number of points')
 ax.set_ylabel('Count')
+
 # plt.show()
 plt.legend()
 plt.savefig('n_pts_histogram.png')
@@ -181,6 +177,7 @@ ax.plot(lengths_downsampled, color='g', label='set_number_of_points (12)')
 ax.plot(lengths_downsampled2, color='b', label='approx_polygon_track (0.25)')
 ax.set_xlabel('Streamline ID')
 ax.set_ylabel('Length')
+
 # plt.show()
 plt.legend()
 plt.savefig('lengths_plots.png')

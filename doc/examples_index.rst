@@ -39,22 +39,30 @@ Basic SNR estimation
 
 - :ref:`example_snr_in_cc`
 
-Denoising
-~~~~~~~~~
-
-- :ref:`example_denoise_nlmeans`
-- :ref:`example_denoise_localpca`
-- :ref:`example_denoise_mppca`
-- :ref:`example_denoise_gibbs`
-
 Reslice
 ~~~~~~~
 
 - :ref:`example_reslice_datasets`
 
+---------
+Denoising
+---------
+
+- :ref:`example_denoise_patch2self`
+- :ref:`example_denoise_nlmeans`
+- :ref:`example_denoise_localpca`
+- :ref:`example_denoise_mppca`
+- :ref:`example_denoise_gibbs`
+
 --------------
 Reconstruction
 --------------
+
+Below, an overview of all reconstruction models available on DIPY.
+
+Note: Some reconstruction models do not have a tutorial yet
+
+.. include:: reconstruction_models_list.rst
 
 Constrained Spherical Deconvolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,6 +151,11 @@ Statistical evaluation
 
 - :ref:`example_kfold_xval`
 
+Intra-Voxel Signal Reconstruction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- :ref:`example_reconst_sh`
+
 ----------------------
 Contextual enhancement
 ----------------------
@@ -161,11 +174,6 @@ Fiber tracking
 - :ref:`example_tracking_stopping_criterion`
 - :ref:`example_tracking_pft`
 - :ref:`example_tracking_sfm`
-
--------------------------
-Fiber tracking evaluation
--------------------------
-
 - :ref:`example_linear_fascicle_evaluation`
 
 ------------------------------------
@@ -177,6 +185,8 @@ Streamline analysis and connectivity
 - :ref:`example_cluster_confidence`
 - :ref:`example_path_length_map`
 - :ref:`example_afq_tract_profiles`
+- :ref:`example_bundle_assignment_maps`
+- :ref:`example_bundle_shape_similarity`
 
 ------------
 Registration

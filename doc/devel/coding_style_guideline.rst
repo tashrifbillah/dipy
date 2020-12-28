@@ -15,8 +15,8 @@ The main principles behind DIPY_ development are:
   and will make it less error-prone.
 * **Documentation**: document the code. Documentation is essential as it is
   one of the key points for the adoption of DIPY as the toolkit of choice in
-  diffusion by the scientific community. Documenting helps clarifying
-  certain choices, helps avoiding obscure places, and is a way to allow
+  diffusion by the scientific community. Documenting helps to clarify
+  certain choices, helps to avoid obscure places, and is a way to allow
   other members *decode* it with less effort.
 * **Language**: the code must be written in English. Norms and spelling
   should be abided by.
@@ -25,15 +25,14 @@ The main principles behind DIPY_ development are:
 Coding style
 ------------
 
-DIPY uses the standard Python `PEP8
-<https://www.python.org/dev/peps/pep-0008/>`_ style to ensure the
-readability and consistency across the toolkit. Conformance to the PEP8 syntax
+DIPY uses the standard Python PEP8_ style to ensure the
+readability and consistency across the toolkit. Conformance to the PEP8_ syntax
 is checked automatically when requesting to push to DIPY. There are
 `software systems <https://pypi.python.org/pypi/pep8>`_ that will check your
-code for PEP8 compliance, and most text editors can be configured to check the
-compliance of your code with PEP8. Beyond the aspects checked, as a
+code for PEP8_ compliance, and most text editors can be configured to check the
+compliance of your code with PEP8_. Beyond the aspects checked, as a
 contributor to DIPY, you should try to ensure that your code, including
-comments, conform to the above principles.
+comments, conforms to the above principles.
 
 Imports
 -------
@@ -45,7 +44,7 @@ and readability across the library::
   import numpy.testing as npt
   import scipy as sp
 
-No alias should be used for `h5py`::
+No alias should be used for ``h5py``::
 
   import h5py
 
@@ -53,29 +52,28 @@ No alias should be used for `h5py`::
 Cython coding style
 -------------------
 DIPY recommends the use of the standard Python
-`PEP8 <https://www.python.org/dev/peps/pep-0008/>`_ style when writing
-`Cython <https://cython.org/>` code.
+PEP8_ style when writing `Cython <https://cython.org/>`_ code.
 
 Cython-specific syntax should follow these additional rules:
 
 Imports
 -------
-The `cimport`s should add the `c` prefix to the usual Python import package
+The ``cimport``'s should add the ``c`` prefix to the usual Python import package
 shorthand, e.g.::
 
   cimport numpy as cnp
 
-Adding the `c` prefix to the import line makes it clear that the Cython/C
-symbols are being referred to as to compared to the Python symbols.
+Adding the ``c`` prefix to the import line makes it clear that the Cython/C
+symbols are being referred to as compared to the Python symbols.
 
 Variable declaration
 --------------------
-Separate `cdef`, `cpdef`, and `ctypedef` statements from the following type by
+Separate ``cdef``, ``cpdef``, and ``ctypedef`` statements from the following type by
 exactly one space. In turn, separate the type from the variable name by exactly
-one space. Declare only one `ctypedef` variable per line. You may `cdef` or
-`cpdef` multiple variables per line as long as these are simple declarations;
+one space. Declare only one ``ctypedef`` variable per line. You may ``cdef`` or
+``cpdef`` multiple variables per line as long as these are simple declarations;
 note that multiple assignment, references, or pointers are not allowed on the
-same line. Grouping `cdef` statements is allowed. For example::
+same line. Grouping ``cdef`` statements is allowed. For example::
 
   # Good
   cdef int n
@@ -102,7 +100,7 @@ same line. Grouping `cdef` statements is allowed. For example::
   cdef   int   get_direction_c(self, double* point, double* direction):
       return 0
 
-Inside of a function, place all `cdef` statements at the top of the function
+Inside of a function, place all ``cdef`` statements at the top of the function
 body::
 
   # Good
@@ -120,22 +118,22 @@ body::
 
 Using C libraries
 -----------------
-The `cimport`s should follow the same rules defined in PEP8 for `import`
-statements. If a module is both *imported* and *cimported*, the `cimport`
-should come before the `import`.
+The ``cimport``'s should follow the same rules defined in PEP8 for ``import``
+statements. If a module is both *imported* and *cimported*, the ``cimport``
+should come before the ``import``.
 
 An example of an imported C library::
 
   from libc.stdlib cimport calloc, realloc, free
 
-Do not use `include` statements.
+Do not use ``include`` statements.
 
 Error return values
 -------------------
-When declaring an error return value with the `except` keyword, use one space on
-both sides of the `except`. If in a function definition, there should be no
-spaces between the error return value and the colon `:`. Avoid `except *`
-unless it is needed for functions returning `void`::
+When declaring an error return value with the ``except`` keyword, use one space on
+both sides of the ``except``. If in a function definition, there should be no
+spaces between the error return value and the colon ``:``. Avoid ``except *``
+unless it is needed for functions returning ``void``::
 
   # Good
   cdef void bar() except *
@@ -152,7 +150,7 @@ Pointers and references
 -----------------------
 Pointers and references may be either zero or one space away from the type name.
 If followed by a variable name, they must be one space away from the variable
-name. Do not put any spaces between the reference operator `&` and the variable
+name. Do not put any spaces between the reference operator ``&`` and the variable
 name::
 
   # Good
@@ -167,8 +165,8 @@ name::
 
 Casting
 -------
-When casting a variable there must be no whitespace between the opening `<` and
-the type. There must one space between the closing `>` and the variable::
+When casting a variable there must be no whitespace between the opening ``<`` and
+the type. There must one space between the closing ``>`` and the variable::
 
   # Good
   <float> i
@@ -185,7 +183,7 @@ Use Python loop syntax::
   for i in range(nrows):
     ...
 
-Other `for`-loop constructs are deprecated and must be avoided.
+Other ``for``-loop constructs are deprecated and must be avoided.
 
 -------------
 Documentation
@@ -226,7 +224,7 @@ Again, both sets of files use the `reStructuredText markup language
 the files to produce the contents that are later rendered in the DIPY_
 website.
 
-The Python examples are compiled, output images produced, and corresponding
+The Python examples are compiled, output images produced and corresponding
 ``.rst`` files produced so that the comments can be appropriately displayed
 in a web page enriched with images.
 
@@ -240,7 +238,7 @@ following guidelines:
 * The classes, objects, and any other construct referenced from the code
   should be written with inverted commas, such as in *In DIPY, we use an
   object called ``GradientTable`` which holds all the acquisition specific
-  parameters, e.g. b-values, b-vectors, timings and others.*
+  parameters, e.g. b-values, b-vectors, timings, and others.*
 * Cite the relevant papers. Use the *[NameYear]* convention for
   cross-referencing them, such as in [Garyfallidis2014]_, and put them
   under the :ref:`references` section.
@@ -255,10 +253,10 @@ following guidelines:
 * As customary in Python, use lowercase and separate words with underscores
   for filenames, labels for references, etc.
 * When including figures, use the regular font for captions (i.e. do not use
-  bold faces), unless otherwise required for a specific text part (e.g. a
+  bold faces) unless otherwise required for a specific text part (e.g. a
   DIPY object, etc.).
 * When referring to relative paths, use the backquote inline markup
-  convention, such as in ``doc/devel``. Do not add the
+  the convention, such as in ``doc/devel``. Do not add the
   greater-than/less-than signs to enclose the path.
 
 

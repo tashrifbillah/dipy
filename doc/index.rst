@@ -6,9 +6,9 @@ Diffusion Imaging In Python
 
 DIPY_ is the paragon 3D/4D+ imaging library in Python. Contains generic methods for
 spatial normalization, signal processing, machine learning, statistical analysis
-and visualization of medical images. Additionally, it contains 
-specialized methods for computational anatomy including diffusion, 
-perfusion and structural imaging. 
+and visualization of medical images. Additionally, it contains
+specialized methods for computational anatomy including diffusion,
+perfusion and structural imaging.
 
 
 
@@ -16,23 +16,19 @@ perfusion and structural imaging.
 Highlights
 **********
 
-**DIPY 1.1.1** is now available. New features include:
+**DIPY 1.3.0** is now available. New features include:
 
-- New module for deep learning ``DIPY.NN`` (uses TensorFlow 2.0).
-- Improved DKI performance and increased utilities.
-- Non-linear and RESTORE fits from DTI compatible now with DKI.
-- Numerical solutions for estimating axial, radial and mean kurtosis.
-- Added Kurtosis Fractional Anisotropy by Glenn et al. 2015.
-- Added Mean Kurtosis Tensor by Hansen et al. 2013.
-- Nibabel minimum version is 3.0.0.
-- Azure CI added and Appveyor CI removed.
-- New command line interfaces for LPCA, MPPCA and Gibbs Unringing.
-- New MTMS CSD tutorial added.
-- Horizon refactored and updated to support StatefulTractograms.
-- Speeded up all cython modules by using a smarter configuration setting.
-- All tutorials updated to API changes and 2 new tutorials added.
+- Gibbs Ringing correction 10X faster.
+- Spherical harmonics basis definitions updated.
+- Added SMT2 metrics from mean signal diffusion kurtosis.
+- New interface functions added to the registration module.
+- New linear transform added to the registration module.
+- New tutorials for DIPY command line interfaces.
+- Fixed compatibility issues with different dependencies.
+- Tqdm (multiplatform progress bar for data downloading) dependency added.
 - Large documentation update.
-- Closed 126 issues and merged 50 pull requests.
+- Bundle section highlight from BUAN added in Horizon.
+- Closed 134 issues and merged 49 pull requests.
 
 
 See :ref:`Older Highlights <old_highlights>`.
@@ -41,10 +37,9 @@ See :ref:`Older Highlights <old_highlights>`.
 *************
 Announcements
 *************
-- DIPY Workshop - Titanium Edition (March 16-20, 2020) is now open for registration:
+- :doc:`DIPY 1.3.0 <release_notes/release1.3>` released November 3, 2020.
+- :doc:`DIPY 1.2.0 <release_notes/release1.2>` released September 9, 2020.
 - :doc:`DIPY 1.1.1 <release_notes/release1.1>` released January 10, 2020.
-- :doc:`DIPY 1.0 <release_notes/release1.0>` released August 5, 2019.
-- :doc:`DIPY 0.16 <release_notes/release0.16>` released March 10, 2019.
 
 
 See some of our :ref:`Past Announcements <old_news>`

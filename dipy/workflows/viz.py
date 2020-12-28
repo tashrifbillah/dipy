@@ -6,7 +6,18 @@ from dipy.viz.app import horizon
 from dipy.io.peaks import load_peaks
 from dipy.io.streamline import load_tractogram
 from dipy.io.utils import create_nifti_header
+from dipy.stats.analysis import assignment_map
+from dipy.utils.optpkg import optional_package
 
+fury, has_fury, setup_module = optional_package('fury')
+vtk, has_vtk, _ = optional_package('vtk')
+
+if has_fury:
+    from fury.colormap import line_colors
+    from fury.utils import numpy_to_vtk_colors
+
+if has_vtk:
+    from vtk.util import numpy_support
 
 class HorizonFlow(Workflow):
 
@@ -17,8 +28,9 @@ class HorizonFlow(Workflow):
     def run(self, input_files, cluster=False, cluster_thr=15.,
             random_colors=False, length_gt=0, length_lt=1000,
             clusters_gt=0, clusters_lt=10**8, native_coords=False,
-            stealth=False, emergency_header='icbm_2009a', out_dir='',
-            out_stealth_png='tmp.png'):
+            stealth=False, emergency_header='icbm_2009a', bg_color=(0, 0, 0),
+            disable_order_transparency=False, buan=False, buan_thr=0.5,
+            buan_highlight=(1, 0, 0), out_dir='', out_stealth_png='tmp.png'):
         """ Interactive medical visualization - Invert the Horizon!
 
         Interact with any number of .trk, .tck or .dpy tractograms and anatomy
@@ -27,36 +39,51 @@ class HorizonFlow(Workflow):
         Parameters
         ----------
         input_files : variable string
-        cluster : bool
-            Enable QuickBundlesX clustering
-        cluster_thr : float
+        cluster : bool, optional
+            Enable QuickBundlesX clustering.
+        cluster_thr : float, optional
             Distance threshold used for clustering. Default value 15.0 for
             small animal brains you may need to use something smaller such
             as 2.0. The distance is in mm. For this parameter to be active
-            ``cluster`` should be enabled
-        random_colors : bool
+            ``cluster`` should be enabled.
+        random_colors : bool, optional
             Given multiple tractograms have been included then each tractogram
-            will be shown with different color
-        length_gt : float
+            will be shown with different color.
+        length_gt : float, optional
             Clusters with average length greater than ``length_gt`` amount
-            in mm will be shown
-        length_lt : float
+            in mm will be shown.
+        length_lt : float, optional
             Clusters with average length less than ``length_lt`` amount in
-            mm will be shown
-        clusters_gt : int
+            mm will be shown.
+        clusters_gt : int, optional
             Clusters with size greater than ``clusters_gt`` will be shown.
-        clusters_lt : int
+        clusters_lt : int, optional
             Clusters with size less than ``clusters_gt`` will be shown.
-        native_coords : bool
-            Show results in native coordinates
-        stealth : bool
+        native_coords : bool, optional
+            Show results in native coordinates.
+        stealth : bool, optional
             Do not use interactive mode just save figure.
-        emergency_header : str
+        emergency_header : str, optional
             If no anatomy reference is provided an emergency header is
             provided. Current options 'icbm_2009a' and 'icbm_2009c'.
-        out_dir : string
-            Output directory. Default current directory.
-        out_stealth_png : string
+        bg_color : variable float, optional
+            Define the background color of the scene. Colors can be defined
+            with 1 or 3 values and should be between [0-1].
+        disable_order_transparency : bool, optional
+            Use depth peeling to sort transparent objects.
+            If True also enables anti-aliasing.
+        buan : bool, optional
+            Enables BUAN framework visualization.
+        buan_thr : float, optional
+            Uses the threshold value to highlight segments on the
+            bundle which have pvalues less than this threshold.
+        buan_highlight : variable float, optional
+            Define the bundle highlight area color. Colors can be defined
+            with 1 or 3 values and should be between [0-1].
+            For example, a value of (1, 0, 0) would mean the red color.
+        out_dir : str, optional
+            Output directory. (default current directory)
+        out_stealth_png : str, optional
             Filename of saved picture.
 
         References
@@ -71,8 +98,10 @@ class HorizonFlow(Workflow):
         tractograms = []
         images = []
         pams = []
+        numpy_files = []
         interactive = not stealth
         world_coords = not native_coords
+        bundle_colors = None
 
         mni_2009a = {}
         mni_2009a['affine'] = np.array([[1., 0., 0., -98.],
@@ -142,11 +171,58 @@ class HorizonFlow(Workflow):
                     print('Peak_dirs shape')
                     print(pam.peak_dirs.shape)
 
+            if ends(".npy"):
+
+                data = np.load(fname)
+                numpy_files.append(data)
+
+                if verbose:
+                    print('numpy array length')
+                    print(len(data))
+
+        if buan:
+            bundle_colors = []
+
+            for i in range(len(numpy_files)):
+
+                n = len(numpy_files[i])
+                pvalues = numpy_files[i]
+                bundle = tractograms[i].streamlines
+
+                indx = assignment_map(bundle, bundle, n)
+                ind = np.array(indx)
+
+                nb_lines = len(bundle)
+                lines_range = range(nb_lines)
+                points_per_line = [len(bundle[i]) for i in lines_range]
+                points_per_line = np.array(points_per_line, np.intp)
+
+                cols_arr = line_colors(bundle)
+                colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
+                vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
+                colors = numpy_support.vtk_to_numpy(vtk_colors)
+                colors = (colors - np.min(colors))/np.ptp(colors)
+
+                for i in range(n):
+
+                    if pvalues[i] < buan_thr:
+                        colors[ind == i] = buan_highlight
+
+                bundle_colors.append(colors)
+
+        if len(bg_color) == 1:
+            bg_color *= 3
+        elif len(bg_color) != 3:
+            raise ValueError('You need 3 values to set up backgound color. '
+                             'e.g --bg_color 0.5 0.5 0.5')
+
+        order_transparent = not disable_order_transparency
         horizon(tractograms=tractograms, images=images, pams=pams,
                 cluster=cluster, cluster_thr=cluster_thr,
-                random_colors=random_colors,
+                random_colors=random_colors, bg_color=bg_color,
+                order_transparent=order_transparent,
                 length_gt=length_gt, length_lt=length_lt,
                 clusters_gt=clusters_gt, clusters_lt=clusters_lt,
                 world_coords=world_coords,
-                interactive=interactive,
+                interactive=interactive, buan=buan, buan_colors=bundle_colors,
                 out_png=pjoin(out_dir, out_stealth_png))

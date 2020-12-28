@@ -363,7 +363,7 @@ class FiberModel(ReconstModel):
                                      unique_idx=vox_coords)
         # How many fibers in each voxel (this will determine how many
         # components are in the matrix):
-        n_unique_f = len(np.hstack(v2f.values()))
+        n_unique_f = len(np.hstack(list(v2f.values())))
         # Preallocate these, which will be used to generate the sparse
         # matrix:
         f_matrix_sig = np.zeros(n_unique_f * n_bvecs, dtype=np.float)
@@ -433,6 +433,7 @@ class FiberModel(ReconstModel):
         # The mean of the relative signal across directions in each voxel:
         mean_sig = np.mean(relative_signal, -1)
         to_fit = (relative_signal - mean_sig[:, None]).ravel()
+        to_fit[np.isnan(to_fit)] = 0
         return (to_fit, weighted_signal, b0_signal, relative_signal, mean_sig,
                 vox_data)
 
@@ -467,6 +468,10 @@ class FiberModel(ReconstModel):
         """
         if affine is None:
             affine = np.eye(4)
+        sl_len = np.array([len(s) for s in streamline])
+        if np.any(sl_len < 2):
+            raise ValueError("Input contains streamlines with only one node."
+            " The LiFE model cannot be fit with these streamlines included.")
         life_matrix, vox_coords = \
             self.setup(streamline, affine, evals=evals, sphere=sphere)
         (to_fit, weighted_signal, b0_signal, relative_signal, mean_sig,

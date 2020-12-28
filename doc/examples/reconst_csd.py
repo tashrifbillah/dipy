@@ -44,7 +44,8 @@ You can verify the b-values of the dataset by looking at the attribute
 ``gtab.bvals``. Now that a datasets with multiple gradient directions is
 loaded, we can proceed with the two steps of CSD.
 
-## Step 1. Estimation of the fiber response function.
+Step 1. Estimation of the fiber response function
+=================================================
 
 There are many strategies to estimate the fiber response function. Here two
 different strategies are presented.
@@ -52,23 +53,42 @@ different strategies are presented.
 **Strategy 1 - response function estimates from a local brain region**
 One simple way to estimate the fiber response function is to look for regions
 of the brain where it is known that there are single coherent fiber
-populations. For example, if we use an ROI at the center of the brain, we will
-find single fibers from the corpus callosum. The ``auto_response`` function
-will calculate FA for an ROI of radius equal to ``roi_radius`` in the center
-of the volume and return the response function estimated in that region for
-the voxels with FA higher than 0.7.
+populations. For example, if we use a ROI at the center of the brain, we will
+find single fibers from the corpus callosum. The ``auto_response_ssst``
+function will calculate FA for a cuboid ROI of radii equal to ``roi_radii`` in
+the center of the volume and return the response function estimated in that
+region for the voxels with FA higher than 0.7.
 """
 
-from dipy.reconst.csdeconv import auto_response
+from dipy.reconst.csdeconv import (auto_response_ssst,
+                                   mask_for_response_ssst,
+                                   response_from_mask_ssst)
 
-response, ratio = auto_response(gtab, data, roi_radius=10, fa_thr=0.7)
+response, ratio = auto_response_ssst(gtab, data, roi_radii=10, fa_thr=0.7)
+
+"""
+Note that the ``auto_response_ssst`` function calls two functions that can be
+used separatly. First, the function ``mask_for_response_ssst`` creates a mask
+of voxels within the cuboid ROI and that meet the FA threshold constraint. This
+mask can be used to calculate the number of voxels that were kept, or to also
+apply an external mask (a WM mask for example). Second, the function
+``response_from_mask_ssst`` takes the mask and returns the response function
+calculated within the mask. If no changes are made to the mask between the to
+calls, the resulting responses should be identical.
+"""
+
+mask = mask_for_response_ssst(gtab, data, roi_radii=10, fa_thr=0.7)
+nvoxels = np.sum(mask)
+print(nvoxels)
+
+response, ratio = response_from_mask_ssst(gtab, data, mask)
 
 """
 The ``response`` tuple contains two elements. The first is an array with
 the eigenvalues of the response function and the second is the average S0 for
 this response.
 
-It is good practice to always validate the result of auto_response. For
+It is good practice to always validate the result of auto_response_ssst. For
 this purpose we can print the elements of ``response`` and have a look at their
 values.
 """
@@ -99,7 +119,7 @@ from dipy.sims.voxel import single_tensor_odf
 # Enables/disables interactive visualization
 interactive = False
 
-ren = window.Renderer()
+scene = window.Scene()
 evals = response[0]
 evecs = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]]).T
 
@@ -109,11 +129,11 @@ response_odf = single_tensor_odf(default_sphere.vertices, evals, evecs)
 response_odf = response_odf[None, None, None, :]
 response_actor = actor.odf_slicer(response_odf, sphere=default_sphere,
                                   colormap='plasma')
-ren.add(response_actor)
+scene.add(response_actor)
 print('Saving illustration as csd_response.png')
-window.record(ren, out_path='csd_response.png', size=(200, 200))
+window.record(scene, out_path='csd_response.png', size=(200, 200))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: csd_response.png
@@ -123,7 +143,7 @@ if interactive:
 
 """
 
-ren.rm(response_actor)
+scene.rm(response_actor)
 
 """
 **Strategy 2 - data-driven calibration of response function** Depending
@@ -174,13 +194,13 @@ response_signal = response_signal[None, None, None, :]
 response_actor = actor.odf_slicer(response_signal, sphere=default_sphere,
                                   colormap='plasma')
 
-ren = window.Renderer()
+scene = window.Scene()
 
-ren.add(response_actor)
+scene.add(response_actor)
 print('Saving illustration as csd_recursive_response.png')
-window.record(ren, out_path='csd_recursive_response.png', size=(200, 200))
+window.record(scene, out_path='csd_recursive_response.png', size=(200, 200))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: csd_recursive_response.png
@@ -190,10 +210,11 @@ if interactive:
 
 """
 
-ren.rm(response_actor)
+scene.rm(response_actor)
 
 """
-## Step 2. fODF reconstruction
+Step 2. fODF reconstruction
+===========================
 
 After estimating a response function for one of the strategies shown above,
 we are ready to start the deconvolution process. Let's import the CSD model
@@ -223,12 +244,12 @@ Here we visualize only a 30x30 region.
 fodf_spheres = actor.odf_slicer(csd_odf, sphere=default_sphere, scale=0.9,
                                 norm=False, colormap='plasma')
 
-ren.add(fodf_spheres)
+scene.add(fodf_spheres)
 
 print('Saving illustration as csd_odfs.png')
-window.record(ren, out_path='csd_odfs.png', size=(600, 600))
+window.record(scene, out_path='csd_odfs.png', size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: csd_odfs.png
@@ -249,14 +270,14 @@ csd_peaks = peaks_from_model(model=csd_model,
                              min_separation_angle=25,
                              parallel=True)
 
-window.clear(ren)
+scene.clear()
 fodf_peaks = actor.peak_slicer(csd_peaks.peak_dirs, csd_peaks.peak_values)
-ren.add(fodf_peaks)
+scene.add(fodf_peaks)
 
 print('Saving illustration as csd_peaks.png')
-window.record(ren, out_path='csd_peaks.png', size=(600, 600))
+window.record(scene, out_path='csd_peaks.png', size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: csd_peaks.png
@@ -269,12 +290,12 @@ We can finally visualize both the ODFs and peaks in the same space.
 
 fodf_spheres.GetProperty().SetOpacity(0.4)
 
-ren.add(fodf_spheres)
+scene.add(fodf_spheres)
 
 print('Saving illustration as csd_both.png')
-window.record(ren, out_path='csd_both.png', size=(600, 600))
+window.record(scene, out_path='csd_both.png', size=(600, 600))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. figure:: csd_both.png

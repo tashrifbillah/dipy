@@ -18,7 +18,7 @@ from dipy.io.image import load_nifti, load_nifti_data
 from dipy.direction.peaks import peaks_from_model
 from dipy.io.streamline import save_trk
 from dipy.io.stateful_tractogram import Space, StatefulTractogram
-from dipy.reconst.csdeconv import auto_response
+from dipy.reconst.csdeconv import auto_response_ssst
 from dipy.reconst import sfm
 from dipy.tracking import utils
 from dipy.tracking.local_tracking import LocalTracking
@@ -60,7 +60,7 @@ For the SFM, this requires first that we define a canonical response function
 that will be used to deconvolve the signal in every voxel
 """
 
-response, ratio = auto_response(gtab, data, roi_radius=10, fa_thr=0.7)
+response, ratio = auto_response_ssst(gtab, data, roi_radii=10, fa_thr=0.7)
 
 
 """
@@ -147,14 +147,14 @@ if has_fury:
     vol_actor2 = vol_actor.copy()
     vol_actor2.display(None, None, 35)
 
-    ren = window.Renderer()
-    ren.add(streamlines_actor)
-    ren.add(vol_actor)
-    ren.add(vol_actor2)
+    scene = window.Scene()
+    scene.add(streamlines_actor)
+    scene.add(vol_actor)
+    scene.add(vol_actor2)
 
-    window.record(ren, out_path='tractogram_sfm.png', size=(800, 800))
+    window.record(scene, out_path='tractogram_sfm.png', size=(800, 800))
     if interactive:
-        window.show(ren)
+        window.show(scene)
 
 """
 .. figure:: tractogram_sfm.png

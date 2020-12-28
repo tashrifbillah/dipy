@@ -22,7 +22,8 @@ MIN_POSITIVE_SIGNAL = 0.0001
 
 
 def _roll_evals(evals, axis=-1):
-    """
+    """Check evals shape.
+
     Helper function to check that the evals provided to functions calculating
     tensor statistics have the right shape
 
@@ -39,6 +40,7 @@ def _roll_evals(evals, axis=-1):
     evals : array-like
         Eigenvalues of a diffusion tensor, rolled so that the 3 eigenvals are
         the last axis.
+
     """
     if evals.shape[-1] != 3:
         msg = "Expecting 3 eigenvalues, got {}".format(evals.shape[-1])
@@ -50,8 +52,7 @@ def _roll_evals(evals, axis=-1):
 
 
 def fractional_anisotropy(evals, axis=-1):
-    r"""
-    Fractional anisotropy (FA) of a diffusion tensor.
+    r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
     Parameters
     ----------
@@ -291,7 +292,7 @@ def trace(evals, axis=-1):
 
 
 def color_fa(fa, evecs):
-    """ Color fractional anisotropy of diffusion tensor
+    r""" Color fractional anisotropy of diffusion tensor
 
     Parameters
     ----------
@@ -353,7 +354,7 @@ def determinant(q_form):
 
 
 def isotropic(q_form):
-    """
+    r"""
     Calculate the isotropic part of the tensor [1]_.
 
     Parameters
@@ -523,7 +524,7 @@ def linearity(evals, axis=-1):
 
     References
     ----------
-    [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
+    .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
         "Geometrical diffusion measures for MRI from tensor basis analysis" in
         Proc. 5th Annual ISMRM, 1997.
     """
@@ -559,7 +560,7 @@ def planarity(evals, axis=-1):
 
     References
     ----------
-    [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
+    .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
         "Geometrical diffusion measures for MRI from tensor basis analysis" in
         Proc. 5th Annual ISMRM, 1997.
     """
@@ -594,7 +595,7 @@ def sphericity(evals, axis=-1):
 
     References
     ----------
-    [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
+    .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz F.,
         "Geometrical diffusion measures for MRI from tensor basis analysis" in
         Proc. 5th Annual ISMRM, 1997.
     """
@@ -604,7 +605,7 @@ def sphericity(evals, axis=-1):
 
 
 def apparent_diffusion_coef(q_form, sphere):
-    """
+    r"""
     Calculate the apparent diffusion coefficient (ADC) in each direction of a
     sphere.
 
@@ -1013,7 +1014,7 @@ class TensorFit(object):
 
         References
         ----------
-        [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
+        .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
             F., "Geometrical diffusion measures for MRI from tensor basis
             analysis" in Proc. 5th Annual ISMRM, 1997.
 
@@ -1039,7 +1040,7 @@ class TensorFit(object):
 
         References
         ----------
-        [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
+        .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
             F., "Geometrical diffusion measures for MRI from tensor basis
             analysis" in Proc. 5th Annual ISMRM, 1997.
 
@@ -1064,7 +1065,7 @@ class TensorFit(object):
 
         References
         ----------
-        [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
+        .. [1] Westin C.-F., Peled S., Gubjartsson H., Kikinis R., Jolesz
             F., "Geometrical diffusion measures for MRI from tensor basis
             analysis" in Proc. 5th Annual ISMRM, 1997.
 
@@ -1089,19 +1090,19 @@ class TensorFit(object):
 
         Notes
         -----
-        This is based on equation 3 in [Aganj2010]_. To re-derive it from
-        scratch, follow steps in [Descoteaux2008]_, Section 7.9 Equation
+        This is based on equation 3 in [1]_. To re-derive it from
+        scratch, follow steps in [2]_, Section 7.9 Equation
         7.24 but with an $r^2$ term in the integral.
 
         References
         ----------
-        .. [Aganj2010] Aganj, I., Lenglet, C., Sapiro, G., Yacoub, E., Ugurbil,
+        .. [1] Aganj, I., Lenglet, C., Sapiro, G., Yacoub, E., Ugurbil,
             K., & Harel, N. (2010). Reconstruction of the orientation
             distribution function in single- and multiple-shell q-ball imaging
             within constant solid angle. Magnetic Resonance in Medicine, 64(2),
             554-566. doi:DOI: 10.1002/mrm.22365
 
-        .. [Descoteaux2008] Descoteaux, M. (2008). PhD Thesis: High Angular
+        .. [2] Descoteaux, M. (2008). PhD Thesis: High Angular
            Resolution Diffusion MRI: from Local Estimation to Segmentation and
            Tractography.
            ftp://ftp-sop.inria.fr/athena/Publications/PhDs/descoteaux_thesis.pdf
@@ -1519,7 +1520,7 @@ def _nlls_err_func(tensor, design_matrix, data, weighting=None,
 
     References
     ----------
-    [1] Chang, L-C, Jones, DK and Pierpaoli, C (2005). RESTORE: robust
+    .. [1] Chang, L-C, Jones, DK and Pierpaoli, C (2005). RESTORE: robust
     estimation of tensors by outlier rejection. MRM, 53: 1088-95.
     """
     # This is the predicted signal given the params:
@@ -1567,7 +1568,7 @@ def _nlls_jacobian_func(tensor, design_matrix, data, *arg, **kwargs):
 
     References
     ----------
-    [1] Koay, CG, Chang, L-C, Carew, JD, Pierpaoli, C, Basser PJ (2006).
+    .. [1] Koay, CG, Chang, L-C, Carew, JD, Pierpaoli, C, Basser PJ (2006).
         A unifying theoretical and algorithmic framework for least squares
         methods of estimation in diffusion tensor imaging. MRM 182, 115-25.
 
@@ -1736,7 +1737,7 @@ def nlls_fit_tensor(design_matrix, data, weighting=None,
 def restore_fit_tensor(design_matrix, data, sigma=None, jac=True,
                        return_S0_hat=False):
     """
-    Use the RESTORE algorithm [Chang2005]_ to calculate a robust tensor fit
+    Use the RESTORE algorithm [1]_ to calculate a robust tensor fit
 
     Parameters
     ----------
@@ -1750,7 +1751,7 @@ def restore_fit_tensor(design_matrix, data, sigma=None, jac=True,
         dimension should contain the data. It makes no copies of data.
 
     sigma : float
-        An estimate of the variance. [Chang2005]_ recommend to use
+        An estimate of the variance. [1]_ recommend to use
         1.5267 * std(background_noise), where background_noise is estimated
         from some part of the image known to contain no signal (only noise).
 
@@ -1769,8 +1770,8 @@ def restore_fit_tensor(design_matrix, data, sigma=None, jac=True,
 
     References
     ----------
-    Chang, L-C, Jones, DK and Pierpaoli, C (2005). RESTORE: robust estimation
-    of tensors by outlier rejection. MRM, 53: 1088-95.
+    .. [1] Chang, L-C, Jones, DK and Pierpaoli, C (2005). RESTORE: robust
+    estimation of tensors by outlier rejection. MRM, 53: 1088-95.
 
     """
     # Detect number of parameters to estimate from design_matrix length plus
@@ -2028,14 +2029,24 @@ def design_matrix(gtab, dtype=None):
         Design matrix or B matrix assuming Gaussian distributed tensor model
         design_matrix[j, :] = (Bxx, Byy, Bzz, Bxy, Bxz, Byz, dummy)
     """
-    B = np.zeros((gtab.gradients.shape[0], 7))
-    B[:, 0] = gtab.bvecs[:, 0] * gtab.bvecs[:, 0] * 1. * gtab.bvals   # Bxx
-    B[:, 1] = gtab.bvecs[:, 0] * gtab.bvecs[:, 1] * 2. * gtab.bvals   # Bxy
-    B[:, 2] = gtab.bvecs[:, 1] * gtab.bvecs[:, 1] * 1. * gtab.bvals   # Byy
-    B[:, 3] = gtab.bvecs[:, 0] * gtab.bvecs[:, 2] * 2. * gtab.bvals   # Bxz
-    B[:, 4] = gtab.bvecs[:, 1] * gtab.bvecs[:, 2] * 2. * gtab.bvals   # Byz
-    B[:, 5] = gtab.bvecs[:, 2] * gtab.bvecs[:, 2] * 1. * gtab.bvals   # Bzz
-    B[:, 6] = np.ones(gtab.gradients.shape[0])
+    if gtab.btens is None:
+        B = np.zeros((gtab.gradients.shape[0], 7))
+        B[:, 0] = gtab.bvecs[:, 0] * gtab.bvecs[:, 0] * 1. * gtab.bvals   # Bxx
+        B[:, 1] = gtab.bvecs[:, 0] * gtab.bvecs[:, 1] * 2. * gtab.bvals   # Bxy
+        B[:, 2] = gtab.bvecs[:, 1] * gtab.bvecs[:, 1] * 1. * gtab.bvals   # Byy
+        B[:, 3] = gtab.bvecs[:, 0] * gtab.bvecs[:, 2] * 2. * gtab.bvals   # Bxz
+        B[:, 4] = gtab.bvecs[:, 1] * gtab.bvecs[:, 2] * 2. * gtab.bvals   # Byz
+        B[:, 5] = gtab.bvecs[:, 2] * gtab.bvecs[:, 2] * 1. * gtab.bvals   # Bzz
+        B[:, 6] = np.ones(gtab.gradients.shape[0])
+    else:
+        B = np.zeros((gtab.gradients.shape[0], 7))
+        B[:, 0] = gtab.btens[:, 0, 0]   # Bxx
+        B[:, 1] = gtab.btens[:, 0, 1] * 2  # Bxy
+        B[:, 2] = gtab.btens[:, 1, 1]   # Byy
+        B[:, 3] = gtab.btens[:, 0, 2] * 2  # Bxz
+        B[:, 4] = gtab.btens[:, 1, 2] * 2  # Byz
+        B[:, 5] = gtab.btens[:, 2, 2]   # Bzz
+        B[:, 6] = np.ones(gtab.gradients.shape[0])
 
     return -B
 

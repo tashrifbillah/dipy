@@ -108,10 +108,10 @@ as the Fiber Orientation Distribution (FOD), used in the fiber tracking.
 """
 
 # Perform CSD on the original data
-from dipy.reconst.csdeconv import auto_response
+from dipy.reconst.csdeconv import auto_response_ssst
 from dipy.reconst.csdeconv import ConstrainedSphericalDeconvModel
 
-response, ratio = auto_response(gtab, data, roi_radius=10, fa_thr=0.7)
+response, ratio = auto_response_ssst(gtab, data, roi_radii=10, fa_thr=0.7)
 csd_model = ConstrainedSphericalDeconvModel(gtab, response)
 csd_fit = csd_model.fit(data_small)
 csd_fit_shm = np.lib.pad(csd_fit.shm_coeff, ((xa, dshape[0]-xb),
@@ -231,37 +231,37 @@ after the cleaning procedure via RFBC thresholding (see
 # Visualize the results
 from dipy.viz import window, actor
 
-# Create renderer
-ren = window.Renderer()
+# Create scene
+scene = window.Scene()
 
 # Original lines colored by LFBC
 lineactor = actor.line(fbc_sl_orig, clrs_orig, linewidth=0.2)
-ren.add(lineactor)
+scene.add(lineactor)
 
 # Horizontal (axial) slice of T1 data
 vol_actor1 = actor.slicer(t1_data, affine=affine)
 vol_actor1.display(z=20)
-ren.add(vol_actor1)
+scene.add(vol_actor1)
 
 # Vertical (sagittal) slice of T1 data
 vol_actor2 = actor.slicer(t1_data, affine=affine)
 vol_actor2.display(x=35)
-ren.add(vol_actor2)
+scene.add(vol_actor2)
 
 # Show original fibers
-ren.set_camera(position=(-264, 285, 155),
-               focal_point=(0, -14, 9),
-               view_up=(0, 0, 1))
-window.record(ren, n_frames=1, out_path='OR_before.png', size=(900, 900))
+scene.set_camera(position=(-264, 285, 155),
+                 focal_point=(0, -14, 9),
+                 view_up=(0, 0, 1))
+window.record(scene, n_frames=1, out_path='OR_before.png', size=(900, 900))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 # Show thresholded fibers
-ren.rm(lineactor)
-ren.add(actor.line(fbc_sl_thres, clrs_thres, linewidth=0.2))
-window.record(ren, n_frames=1, out_path='OR_after.png', size=(900, 900))
+scene.rm(lineactor)
+scene.add(actor.line(fbc_sl_thres, clrs_thres, linewidth=0.2))
+window.record(scene, n_frames=1, out_path='OR_after.png', size=(900, 900))
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
 """
 .. _optic_radiation_before_cleaning:

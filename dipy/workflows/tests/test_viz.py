@@ -67,6 +67,12 @@ def test_horizon_flow():
             clusters_lt=np.inf, clusters_gt=0,
             world_coords=True, interactive=False)
 
+    buan_colors = np.ones(streamlines.get_data().shape)
+
+    horizon(tractograms, buan=True, buan_colors=buan_colors,
+            world_coords=True, interactive=False)
+
+
     data = 255 * np.random.rand(197, 233, 189)
 
     images = [(data, affine)]
@@ -80,12 +86,16 @@ def test_horizon_flow():
 
         fimg = os.path.join(out_dir, 'test.nii.gz')
         ftrk = os.path.join(out_dir, 'test.trk')
+        fnpy = os.path.join(out_dir, 'test.npy')
 
         save_nifti(fimg, data, affine)
         dimensions = data.shape
         nii_header = create_nifti_header(affine, dimensions, vox_size)
         sft = StatefulTractogram(streamlines, nii_header, space=Space.RASMM)
         save_tractogram(sft, ftrk, bbox_valid_check=False)
+
+        pvalues = np.random.uniform(low=0, high=1, size=(10,))
+        np.save(fnpy, pvalues)
 
         input_files = [ftrk, fimg]
 
@@ -98,6 +108,25 @@ def test_horizon_flow():
 
         npt.assert_equal(os.path.exists(os.path.join(out_dir, 'tmp_x.png')),
                          True)
+        npt.assert_raises(ValueError, hz_flow.run,
+                          input_files=input_files, bg_color=(0.2, 0.2))
+
+        hz_flow.run(input_files=input_files, stealth=True, bg_color=[0.5, ],
+                    out_dir=out_dir, out_stealth_png='tmp_x.png')
+        npt.assert_equal(os.path.exists(os.path.join(out_dir, 'tmp_x.png')),
+                         True)
+
+        input_files = [ftrk, fnpy]
+
+        npt.assert_equal(len(input_files), 2)
+
+        hz_flow.run(input_files=input_files, stealth=True, bg_color=[0.5, ],
+                    buan=True, buan_thr=0.5, buan_highlight=(1, 1, 0),
+                    out_dir=out_dir, out_stealth_png='tmp_x.png')
+        npt.assert_equal(os.path.exists(os.path.join(out_dir, 'tmp_x.png')),
+                         True)
+
+
 
 
 if __name__ == '__main__':
